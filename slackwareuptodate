@@ -1,0 +1,126 @@
+#!/bin/sh
+
+# Сценарий командной оболочки для обновления Slackware
+
+# Copyright 2016
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is 
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF 
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, 
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+TMP=/tmp/slackwareuptodate
+if [ ! -d $TMP ]; then
+  mkdir -p $TMP
+fi
+
+pause() {
+  sleep 2
+  read -p "Для возврата в главное меню нажмите Enter." STUFF
+}
+
+while [ 0 ]; do
+
+ dialog --title "Slackware up to date" \
+--default-item "$DEFAULTITEM" \
+--menu \
+"Добро пожаловать в 'Slackware up to date'.\n\
+Выберите нужный вариант меню клавишами UP/DOWN и SPACE или ENTER.\n\
+Можно использовать дополнительные клавиши: '+', '-', TAB." 18 72 9 \
+"HELP" "Прочитать HELP-файл 'Slackware up to date'" \
+"check-updates" "slackpkg check-updates" \
+"update" "slackpkg update" \
+"slackpkg" "slackpkg upgrade slackpkg" \
+"glibc-solibs" "slackpkg upgrade glibc-solibs" \
+"install-new" "slackpkg install-new" \
+"upgrade-all" "slackpkg upgrade-all" \
+"clean-system" "slackpkg clean-system" \
+"EXIT" "Закрыть 'Slackware up to date'" 2> $TMP/MainMenu
+ if [ ! $? = 0 ]; then
+  rm -f $TMP/MainMenu
+  exit
+ fi
+ DEFAULTITEM="$(< $TMP/MainMenu)"
+ MAINSELECT="`cat $TMP/MainMenu`"
+ rm $TMP/MainMenu
+
+ if [ "$MAINSELECT" = "HELP" ]; then
+  dialog --title "HELP" \
+--msgbox \
+"Сперва следует обновить базу данных пакетов slackpkg:
+# slackpkg update
+
+Обновить сам slackpkg до новой версии:
+# slackpkg upgrade slackpkg
+
+Обновить пакет glibc-solibs:
+# slackpkg upgrade glibc-solibs
+
+Теперь slackpkg обновит компьютер новыми пакетами Slackware:
+# slackpkg install-new
+# slackpkg upgrade-all
+# slackpkg clean-system" 18 72
+  continue
+ fi
+
+ if [ "$MAINSELECT" = "check-updates" ]; then
+  clear
+  /usr/sbin/slackpkg check-updates
+  pause
+ fi
+ 
+ if [ "$MAINSELECT" = "update" ]; then
+  clear
+  /usr/sbin/slackpkg update
+  pause
+ fi
+ 
+ if [ "$MAINSELECT" = "slackpkg" ]; then
+  clear
+  /usr/sbin/slackpkg upgrade slackpkg
+  pause
+ fi
+
+ if [ "$MAINSELECT" = "glibc-solibs" ]; then
+  clear
+  /usr/sbin/slackpkg upgrade glibc-solibs
+  pause
+ fi
+
+ if [ "$MAINSELECT" = "install-new" ]; then
+  clear
+  /usr/sbin/slackpkg install-new
+  pause
+ fi
+
+ if [ "$MAINSELECT" = "upgrade-all" ]; then
+  clear
+  /usr/sbin/slackpkg upgrade-all
+  pause
+ fi
+
+ if [ "$MAINSELECT" = "clean-system" ]; then
+  clear
+  /usr/sbin/slackpkg clean-system
+  pause
+ fi
+
+ if [ "$MAINSELECT" = "EXIT" ]; then
+  clear
+  break
+ fi
+
+done
